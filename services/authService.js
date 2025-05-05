@@ -1,4 +1,4 @@
-const { v4: uuid4 } = require("uuid");
+const { nanoid } = require("nanoid");
 const { sendVerificationEmail } = require("./emailService");
 const User = require("../schemas/UserSchema");
 const jwt = require("jsonwebtoken");
@@ -6,11 +6,17 @@ const jwt = require("jsonwebtoken");
 const registerUser = async ({ username, password, email }) => {
   const userExists = await User.findOne({ email });
   if (userExists) {
-    throw new Error("Ten email jest juz zarejestrowany!");
+    throw new Error("This email is already taken!");
   }
 
-  const verificationToken = uuid4();
-  const newUser = new User({ username, password, email, verificationToken });
+  const verificationToken = nanoid();
+
+  const newUser = new User({
+    username,
+    password,
+    email,
+    verificationToken,
+  });
   await newUser.setPassword(password);
   await newUser.save();
 
@@ -21,18 +27,16 @@ const registerUser = async ({ username, password, email }) => {
 const loginUser = async ({ username, password }) => {
   const user = await User.findOne({ username });
   if (!user) {
-    throw new Error("Uzytkownik o podanej nazwie nie istnieje!");
+    throw new Error("User not exists!");
   }
 
   if (!user.verify) {
-    throw new Error(
-      "Adres email nie został jeszcze potwierdzony! Sprawdź swoją skrzynkę pocztową."
-    );
+    throw new Error("Email has not been verified! Please check your inbox.");
   }
 
   const isPasswordCorrect = await user.validatePassword(password);
   if (!isPasswordCorrect) {
-    throw new Error("Wprowadzono nieprawidłowe hasło!");
+    throw new Error("Wrong password!");
   }
 
   const payload = {
@@ -40,7 +44,7 @@ const loginUser = async ({ username, password }) => {
     username: user.username,
   };
 
-  const token = jwt.sign(payload, process.env.SECRET, { expiresIn: "12h" });
+  const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "12h" });
   user.token = token;
   await user.save();
   return { token, user: { username: user.username, email: user.email } };
@@ -49,7 +53,7 @@ const loginUser = async ({ username, password }) => {
 const logoutUser = async (userId) => {
   const user = await User.findById(userId);
   if (!user) {
-    throw new Error("Brak autoryzacji");
+    throw new Error("Not authorized!");
   }
 
   user.token = null;
@@ -77,12 +81,12 @@ const resendVerificationEmail = async (email) => {
   }
 
   if (user.verify) {
-    return "Uzytkownik zweryfikowany";
+    return "alreadyVerified";
   }
 
   await sendVerificationEmail(user.email, user.verificationToken);
 
-  return "Wysłano ponownie";
+  return "resent";
 };
 
 module.exports = {

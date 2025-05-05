@@ -16,7 +16,7 @@ const signup = async (req, res, next) => {
       email,
     });
     return res.status(201).json({
-      message: "Uzytkownik utworzony",
+      message: "User created!",
       user: {
         username: newUser.username,
         email: newUser.email,
@@ -34,8 +34,7 @@ const login = async (req, res, next) => {
     return res.json({ token, user });
   } catch (err) {
     if (
-      err.message ===
-      "Adres email nie został jeszcze potwierdzony! Sprawdź swoją skrzynkę pocztową."
+      err.message === "Email has not been verified! Please check your inbox."
     ) {
       return res.status(401).json({ message: err.message });
     }
@@ -45,7 +44,7 @@ const login = async (req, res, next) => {
 
 const logout = async (req, res, next) => {
   try {
-    const userId = req.user._id;
+    const userId = req.user.id;
     await logoutUser(userId);
     res.status(204).send();
   } catch (err) {
@@ -77,11 +76,11 @@ const verifyEmail = async (req, res, next) => {
       if (alreadyVerifiedUser) {
         return res
           .status(400)
-          .json({ message: "Email został ju zweryikowany" });
+          .json({ message: "Email has been already verified!" });
       }
-      return res.status(404).json({ message: "Nie znaleziono uzytkownika" });
+      return res.status(404).json({ message: "Users not found!" });
     }
-    res.status(200).json({ message: "Weryfikacja przebiegła pomyślnie!" });
+    res.status(200).json({ message: "Verification succesful!" });
   } catch (err) {
     next(err);
   }
@@ -91,16 +90,16 @@ const resendVerificationEmailHandler = async (req, res, next) => {
   const { email } = req.body;
 
   if (!email) {
-    return res.status(400).json({ message: "Brakuje wymaganego pola email!" });
+    return res.status(400).json({ message: "Missing required field email!" });
   }
   try {
     const result = await resendVerificationEmail(email);
-    if (result === "Uzytkownik zweryfikowany") {
+    if (result === "alreadyVerified") {
       return res
         .status(400)
-        .json({ message: "Weryfikacja adresu została juz wykonana!" });
+        .json({ message: "Verification has already been passed!!" });
     }
-    res.status(200).json({ message: "Email weryfikacyjny został wysłany!" });
+    res.status(200).json({ message: "Verification email sent!" });
   } catch (err) {
     next(err);
   }

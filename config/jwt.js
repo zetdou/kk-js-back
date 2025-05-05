@@ -16,7 +16,7 @@ const jwtStrategy = () => {
         const user = await User.findOne({ _id: payload.id }).lean();
 
         if (!user) {
-          return done(new Error("Uzytkownika nie znaleziony!"));
+          return done(new Error("User!"));
         }
         return done(null, user);
       } catch (err) {

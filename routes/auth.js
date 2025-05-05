@@ -7,11 +7,14 @@ const {
   getCurrentUser,
   verifyEmail,
   resendVerificationEmailHandler,
-} = requrie("../controllers/authController");
+} = require("../controllers/authController");
+const { authMiddleware } = require("../middleware/authMiddleware");
 
 router.post("/signup", signup);
 router.post("/login", login);
-router.get("/logout", logout);
-router.get("/current", getCurrentUser);
+router.get("/logout", authMiddleware, logout);
+router.get("/current", authMiddleware, getCurrentUser);
 router.get("/verify/:verificationToken", verifyEmail);
 router.post("/verify", resendVerificationEmailHandler);
+
+module.exports = router;

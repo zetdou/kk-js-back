@@ -16,7 +16,7 @@ const sendVerificationEmail = async (email, verificationToken) => {
     from: process.env.BREVO_EMAIL,
     to: email,
     subject: "Witaj w komitecie! Potwierdź swój adres w naszym sklepie!",
-    html: `Kliknij <a href"${verificationUrl}">tutaj</a> aby zweryfikować swój adres email w naszym sklepie! Życzymy udanych zakupów!`,
+    html: `Kliknij <a href="${verificationUrl}">tutaj</a> aby zweryfikować swój adres email w naszym sklepie! Życzymy udanych zakupów!`,
   };
   try {
     await transporter.sendMail(mailOptions);
