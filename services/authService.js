@@ -1,7 +1,41 @@
 const { nanoid } = require("nanoid");
 const { sendVerificationEmail } = require("./emailService");
+const admin = require("../config/firebaseAdmin");
 const User = require("../schemas/UserSchema");
 const jwt = require("jsonwebtoken");
+
+const firebaseLogin = async (idToken) => {
+  const decodedToken = await admin.auth().verifyIdToken(idToken);
+  const { email, uid } = decodedToken;
+
+  let user = await User.findOne({ email });
+
+  if (!user) {
+    const username = email.split("@")[0];
+    console.log(username);
+
+    const user = new User({
+      username,
+      email,
+      password: uid,
+      verify: true,
+      verificationToken: null,
+    });
+
+    await user.save();
+  }
+
+  const payload = {
+    id: user._id,
+    username: user.username,
+  };
+
+  const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "12h" });
+  user.token = token;
+  await user.save();
+
+  return { token, user: { username: user.username, email: user.email } };
+};
 
 const registerUser = async ({ username, password, email }) => {
   const userExists = await User.findOne({ email });
@@ -95,4 +129,5 @@ module.exports = {
   logoutUser,
   verifyUser,
   resendVerificationEmail,
+  firebaseLogin,
 };

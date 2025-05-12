@@ -4,8 +4,23 @@ const {
   logoutUser,
   verifyUser,
   resendVerificationEmail,
+  firebaseLogin,
 } = require("../services/authService");
 const User = require("../schemas/UserSchema");
+
+const firebaseAuthLogin = async (req, res, next) => {
+  const { idToken } = req.body;
+
+  if (!idToken) {
+    return res.status(400).json({ message: "Missing firebase token!" });
+  }
+  try {
+    const { token, user } = await firebaseLogin(idToken);
+    return res.status(200).json({ token, user });
+  } catch (err) {
+    next(err);
+  }
+};
 
 const signup = async (req, res, next) => {
   const { username, password, email } = req.body;
@@ -112,4 +127,5 @@ module.exports = {
   getCurrentUser,
   verifyEmail,
   resendVerificationEmailHandler,
+  firebaseAuthLogin,
 };

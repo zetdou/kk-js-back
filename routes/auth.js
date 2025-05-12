@@ -7,6 +7,7 @@ const {
   getCurrentUser,
   verifyEmail,
   resendVerificationEmailHandler,
+  firebaseAuthLogin,
 } = require("../controllers/authController");
 const { authMiddleware } = require("../middleware/authMiddleware");
 
@@ -16,5 +17,7 @@ router.get("/logout", authMiddleware, logout);
 router.get("/current", authMiddleware, getCurrentUser);
 router.get("/verify/:verificationToken", verifyEmail);
 router.post("/verify", resendVerificationEmailHandler);
+
+router.post("/firebase-login", firebaseAuthLogin);
 
 module.exports = router;
