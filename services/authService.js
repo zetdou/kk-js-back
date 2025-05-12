@@ -12,9 +12,8 @@ const firebaseLogin = async (idToken) => {
 
   if (!user) {
     const username = email.split("@")[0];
-    console.log(username);
 
-    const user = new User({
+    const newUser = new User({
       username,
       email,
       password: uid,
@@ -22,7 +21,7 @@ const firebaseLogin = async (idToken) => {
       verificationToken: null,
     });
 
-    await user.save();
+    user = await newUser.save();
   }
 
   const payload = {
